@@ -1,0 +1,6 @@
+.idea
+venv
+__pycache__/
+.mypy_cache
+tests/.pytest_cache
+*.db
