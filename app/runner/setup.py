@@ -1,10 +1,17 @@
 from fastapi import FastAPI
 
-from app.core.facade import Service
+from app.core.facade import BTCWalletService
+from app.infrastructure.fastapi.admin import admin_api
+from app.infrastructure.fastapi.transaction import transaction_api
+from app.infrastructure.fastapi.user import user_api
+from app.infrastructure.fastapi.wallet import wallet_api
 
 
 def setup() -> FastAPI:
     app = FastAPI()
-    # app.include_router(receipt_api)
-    app.state.core = Service.create()
+    app.include_router(admin_api)
+    app.include_router(transaction_api)
+    app.include_router(user_api)
+    app.include_router(wallet_api)
+    app.state.core = BTCWalletService.create()
     return app
