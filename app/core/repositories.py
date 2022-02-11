@@ -41,7 +41,7 @@ class IFatherRepository(Protocol):
         pass
 
     # gets all user related transactions out of all wallets that belong to user
-    def get_user_transactions(self, api_key: str) -> List[Transaction]:
+    def get_user_transactions(self, user: UserInfo) -> List[Transaction]:
         pass
 
     def get_wallet_user(self, wallet_address: str) -> UserInfo:
@@ -66,4 +66,7 @@ class IFatherRepository(Protocol):
         pass
 
     def get_user_by_email(self, email: str) -> Optional[UserInfo]:
+        pass
+
+    def get_user_wallets(self, user: UserInfo) -> List[Wallet]:
         pass

@@ -142,7 +142,7 @@ class SQLiteRepository:
 
         return int(row[0])
 
-    def get_user_transactions(self, api_key: str) -> List[Transaction]:
+    def get_user_transactions(self, user: UserInfo) -> List[Transaction]:
         connection = sqlite3.connect(self.db_name)
         cursor = connection.cursor()
 
@@ -166,7 +166,7 @@ class SQLiteRepository:
                      ON uw2.user_id = u2.id
                      WHERE u1.api_key = ?
                      OR u2.api_key = ?;"""
-        args = (api_key, api_key)
+        args = (user.api_key, user.api_key)
 
         cursor.execute(command, args)
         rows = cursor.fetchall()
@@ -212,7 +212,7 @@ class SQLiteRepository:
 
         return UserInfo(email=row[0], api_key=row[1])
 
-    def add_wallet(self, wallet: Wallet, user_api_key: str) -> None:
+    def add_wallet(self, wallet: Wallet, user: UserInfo) -> None:
         connection = sqlite3.connect(self.db_name)
         cursor = connection.cursor()
 
@@ -223,7 +223,7 @@ class SQLiteRepository:
         cursor.execute(command, args)
         connection.commit()
 
-        user_id = self.__get_user_id(cursor=cursor, api_key=user_api_key)
+        user_id = self.__get_user_id(cursor=cursor, api_key=user.api_key)
         wallet_id = self.__get_wallet_id(
             cursor=cursor, wallet_address=wallet.wallet_address
         )
