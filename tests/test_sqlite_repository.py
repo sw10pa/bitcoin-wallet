@@ -21,11 +21,11 @@ def test_should_fill_tables_with_test_data() -> None:
 
     sqlite_repository.add_wallet(
         wallet=Wallet(wallet_address="wallet_address_1", btc_balance=1),
-        user_api_key="api_key_1",
+        user=UserInfo(api_key="api_key_1", email="email_1"),
     )
     sqlite_repository.add_wallet(
         wallet=Wallet(wallet_address="wallet_address_2", btc_balance=2),
-        user_api_key="api_key_2",
+        user=UserInfo(api_key="api_key_2", email="email_2"),
     )
 
     sqlite_repository.add_transaction(
@@ -97,7 +97,9 @@ def test_should_fetch_all_transactions() -> None:
 def test_should_get_user_transactions() -> None:
     sqlite_repository = SQLiteRepository(db_name=TEST_DB_NAME)
 
-    transactions = sqlite_repository.get_user_transactions(api_key="api_key_1")
+    transactions = sqlite_repository.get_user_transactions(
+        user=UserInfo(api_key="api_key_1", email="email_1")
+    )
     assert len(transactions) == 3
 
     for i in range(1, 4):
@@ -193,3 +195,15 @@ def test_should_get_user_by_email() -> None:
 
     assert user.api_key == "api_key_1"
     assert user.email == "email_1"
+
+
+def test_should_get_user_wallets() -> None:
+    sqlite_repository = SQLiteRepository(db_name=TEST_DB_NAME)
+
+    wallets = sqlite_repository.get_user_wallets(
+        user=UserInfo(api_key="api_key_1", email="email_1")
+    )
+    assert len(wallets) == 1
+
+    assert wallets[0].wallet_address == "wallet_address_1"
+    assert wallets[0].btc_balance == 2

@@ -366,3 +366,36 @@ class SQLiteRepository:
             return UserInfo(api_key=row[0], email=row[1])
 
         return None
+
+    def get_user_wallets(self, user: UserInfo) -> List[Wallet]:
+        connection = sqlite3.connect(self.db_name)
+        cursor = connection.cursor()
+
+        command = """SELECT w.address,
+                            w.balance_in_btc
+                     FROM wallets w
+                     JOIN users_wallets uw
+                     ON w.id = uw.wallet_id
+                     JOIN users u
+                     ON uw.user_id = u.id
+                     WHERE u.api_key = ?;"""
+        args = (user.api_key,)
+
+        cursor.execute(command, args)
+        rows = cursor.fetchall()
+
+        cursor.close()
+        connection.close()
+
+        wallets = []
+
+        if rows:
+            for row in rows:
+                wallets.append(
+                    Wallet(
+                        wallet_address=row[0],
+                        btc_balance=row[1],
+                    )
+                )
+
+        return wallets
