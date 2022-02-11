@@ -1,6 +1,6 @@
 import sqlite3
 from sqlite3 import Cursor
-from typing import List
+from typing import List, Optional
 
 from app.core.repositories import Transaction, UserInfo, Wallet
 
@@ -324,3 +324,45 @@ class SQLiteRepository:
 
         cursor.close()
         connection.close()
+
+    def get_user(self, api_key: str) -> Optional[UserInfo]:
+        connection = sqlite3.connect(self.db_name)
+        cursor = connection.cursor()
+
+        command = """SELECT api_key,
+                            email
+                     FROM users
+                     WHERE api_key = ?;"""
+        args = (api_key,)
+
+        cursor.execute(command, args)
+        row = cursor.fetchone()
+
+        cursor.close()
+        connection.close()
+
+        if row:
+            return UserInfo(api_key=row[0], email=row[1])
+
+        return None
+
+    def get_user_by_email(self, email: str) -> Optional[UserInfo]:
+        connection = sqlite3.connect(self.db_name)
+        cursor = connection.cursor()
+
+        command = """SELECT api_key,
+                            email
+                     FROM users
+                     WHERE email = ?;"""
+        args = (email,)
+
+        cursor.execute(command, args)
+        row = cursor.fetchone()
+
+        cursor.close()
+        connection.close()
+
+        if row:
+            return UserInfo(api_key=row[0], email=row[1])
+
+        return None
