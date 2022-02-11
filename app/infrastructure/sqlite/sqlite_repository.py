@@ -224,13 +224,15 @@ class SQLiteRepository:
         connection.commit()
 
         user_id = self.__get_user_id(cursor=cursor, api_key=user_api_key)
-        wallet_id = self.__get_wallet_id(cursor=cursor, wallet_address=wallet.wallet_address)
+        wallet_id = self.__get_wallet_id(
+            cursor=cursor, wallet_address=wallet.wallet_address
+        )
 
         command = """INSERT INTO users_wallets (user_id, wallet_id)
                      VALUES (?, ?);"""
-        args = (user_id, wallet_id)
+        new_args = (user_id, wallet_id)
 
-        cursor.execute(command, args)
+        cursor.execute(command, new_args)
         connection.commit()
 
         cursor.close()

@@ -64,7 +64,9 @@ class WalletInteractor:
             btc_balance=wallet_btc_balance,
             usd_balance=wallet_btc_balance * 1.7,
         )
-        self.wallet_repository.add_wallet(Wallet(wallet_address, wallet_btc_balance))
+        self.wallet_repository.add_wallet(
+            Wallet(wallet_address, wallet_btc_balance), request.api_key
+        )
         return WalletResponse(
             success=True,
             message="TODO",
