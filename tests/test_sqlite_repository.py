@@ -123,7 +123,9 @@ def test_should_get_user_transactions() -> None:
 def test_should_get_wallet_user() -> None:
     sqlite_repository = SQLiteRepository(db_name=TEST_DB_NAME)
 
-    user = sqlite_repository.get_wallet_user(wallet_address="wallet_address_1")
+    user = sqlite_repository.get_wallet_user(
+        wallet=Wallet(wallet_address="wallet_address_1", btc_balance=2)
+    )
 
     assert user.api_key == "api_key_1"
     assert user.email == "email_1"
@@ -134,7 +136,7 @@ def test_should_get_wallet() -> None:
 
     wallet = sqlite_repository.get_wallet(wallet_address="wallet_address_1")
 
-    assert wallet.wallet_address == "wallet_address_1"
+    assert wallet is not None and wallet.wallet_address == "wallet_address_1"
     assert wallet.btc_balance == 1
 
 
@@ -173,7 +175,7 @@ def test_should_update_wallet_balance() -> None:
 
     wallet = sqlite_repository.get_wallet(wallet_address="wallet_address_1")
 
-    assert wallet.wallet_address == "wallet_address_1"
+    assert wallet is not None and wallet.wallet_address == "wallet_address_1"
     assert wallet.btc_balance == 2
 
 

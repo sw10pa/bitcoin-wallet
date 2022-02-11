@@ -190,7 +190,7 @@ class SQLiteRepository:
 
         return transactions
 
-    def get_wallet_user(self, wallet_address: str) -> UserInfo:
+    def get_wallet_user(self, wallet: Wallet) -> UserInfo:
         connection = sqlite3.connect(self.db_name)
         cursor = connection.cursor()
 
@@ -202,7 +202,7 @@ class SQLiteRepository:
                      JOIN users u
                      ON uw.user_id = u.id
                      WHERE w.address = ?;"""
-        args = (wallet_address,)
+        args = (wallet.wallet_address,)
 
         cursor.execute(command, args)
         row = cursor.fetchone()
@@ -250,7 +250,7 @@ class SQLiteRepository:
 
         return int(row[0])
 
-    def get_wallet(self, wallet_address: str) -> Wallet:
+    def get_wallet(self, wallet_address: str) -> Optional[Wallet]:
         connection = sqlite3.connect(self.db_name)
         cursor = connection.cursor()
 
@@ -265,8 +265,9 @@ class SQLiteRepository:
 
         cursor.close()
         connection.close()
-
-        return Wallet(wallet_address=row[0], btc_balance=row[1])
+        if row:
+            return Wallet(wallet_address=row[0], btc_balance=row[1])
+        return None
 
     def get_wallet_transactions(self, wallet_address: str) -> List[Transaction]:
         connection = sqlite3.connect(self.db_name)

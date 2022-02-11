@@ -5,6 +5,7 @@ from app.infrastructure.fastapi.admin import admin_api
 from app.infrastructure.fastapi.transaction import transaction_api
 from app.infrastructure.fastapi.user import user_api
 from app.infrastructure.fastapi.wallet import wallet_api
+from app.infrastructure.sqlite.sqlite_repository import SQLiteRepository
 
 
 def setup() -> FastAPI:
@@ -13,5 +14,8 @@ def setup() -> FastAPI:
     app.include_router(transaction_api)
     app.include_router(user_api)
     app.include_router(wallet_api)
-    app.state.core = BTCWalletService.create()
+    repository = SQLiteRepository()
+    app.state.core = BTCWalletService.create(
+        repository, repository, repository, repository
+    )
     return app

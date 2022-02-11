@@ -7,6 +7,11 @@ class Wallet:
     wallet_address: str
     btc_balance: float
 
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, Wallet):
+            return self.wallet_address == other.wallet_address
+        return False
+
 
 @dataclass
 class Transaction:
@@ -27,6 +32,11 @@ class StatisticsInfo:
 class UserInfo:
     api_key: str
     email: str
+
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, UserInfo):
+            return self.api_key == other.api_key
+        return False
 
 
 class IFatherRepository(Protocol):

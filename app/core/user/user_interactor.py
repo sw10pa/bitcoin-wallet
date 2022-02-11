@@ -1,8 +1,9 @@
+import uuid
 from dataclasses import dataclass
-from typing import Protocol
+from typing import Optional, Protocol
 
-from app.core.facade import Response
-from app.core.repositories import IFatherRepository, UserInfo
+from app.core.repositories import UserInfo
+from app.core.utils import Response
 
 
 @dataclass
@@ -12,7 +13,18 @@ class RegisterUserRequest:
 
 @dataclass
 class RegisterUserResponse(Response):
-    api_key: str
+    api_key: Optional[str]
+
+
+class IUserRepository(Protocol):
+    def get_user(self, api_key: str) -> Optional[UserInfo]:
+        pass
+
+    def get_user_by_email(self, email: str) -> Optional[UserInfo]:
+        pass
+
+    def register_user(self, user_info: UserInfo) -> None:
+        pass
 
 
 class IUserInteractor(Protocol):
@@ -21,13 +33,20 @@ class IUserInteractor(Protocol):
 
 
 class UserInteractor:
-    def __init__(
-        self, user_repository: IFatherRepository
-    ):  # TODO change to IUserRepository
+    def __init__(self, user_repository: IUserRepository):
         self.user_repository = user_repository
 
     def register_user(self, request: RegisterUserRequest) -> RegisterUserResponse:
-        api_key = "Stephane27"  # TODO generate api_key
+        if self.user_repository.get_user_by_email(request.email):
+            return RegisterUserResponse(
+                success=False,
+                message="User with this email already exists",
+                api_key=None,
+            )
+
+        api_key = str(uuid.uuid4().hex)
         user = UserInfo(email=request.email, api_key=api_key)
         self.user_repository.register_user(user)
-        return RegisterUserResponse(api_key=api_key, success=True, message="TODO")
+        return RegisterUserResponse(
+            api_key=api_key, success=True, message="Here is your api key, keep it safe!"
+        )
