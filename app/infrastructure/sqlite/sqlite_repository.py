@@ -1,8 +1,12 @@
 import sqlite3
+from sqlite3 import Cursor
+from typing import List
+
+from app.core.repositories import Transaction, UserInfo, Wallet
 
 
 class SQLiteRepository:
-    def __init__(self, db_name: str = "bitcoin_wallet.db") -> None:
+    def __init__(self, db_name: str = "bw.db") -> None:
         self.db_name = db_name
         self.__create_tables()
 
@@ -43,6 +47,255 @@ class SQLiteRepository:
                fee_pct FLOAT,
                btc_usd_exchange_rate FLOAT NOT NULL);"""
         )
+        connection.commit()
+
+        cursor.close()
+        connection.close()
+
+    def register_user(self, user: UserInfo) -> None:
+        connection = sqlite3.connect(self.db_name)
+        cursor = connection.cursor()
+
+        command = """INSERT INTO users (email, api_key)
+                     VALUES (?, ?);"""
+        args = (user.email, user.api_key)
+
+        cursor.execute(command, args)
+        connection.commit()
+
+        cursor.close()
+        connection.close()
+
+    def fetch_all_transactions(self) -> List[Transaction]:
+        connection = sqlite3.connect(self.db_name)
+        cursor = connection.cursor()
+
+        command = """SELECT w1.address,
+                            w2.address,
+                            t.amount_in_btc,
+                            t.fee_pct,
+                            t.btc_usd_exchange_rate
+                     FROM transactions t
+                     JOIN wallets w1
+                     ON t.wallet_id_from = w1.id
+                     JOIN wallets w2
+                     ON t.wallet_id_to = w2.id;"""
+
+        cursor.execute(command)
+        rows = cursor.fetchall()
+
+        cursor.close()
+        connection.close()
+
+        transactions = []
+
+        if rows:
+            for row in rows:
+                transactions.append(
+                    Transaction(
+                        wallet_address_from=row[0],
+                        wallet_address_to=row[1],
+                        btc_amount=row[2],
+                        fee_pct=row[3],
+                        exchange_rate=row[4],
+                    )
+                )
+
+        return transactions
+
+    def add_transaction(self, transaction: Transaction) -> None:
+        connection = sqlite3.connect(self.db_name)
+        cursor = connection.cursor()
+
+        wallet_id_from = self.__get_wallet_id(
+            cursor=cursor, wallet_address=transaction.wallet_address_from
+        )
+        wallet_id_to = self.__get_wallet_id(
+            cursor=cursor, wallet_address=transaction.wallet_address_to
+        )
+
+        command = """INSERT INTO transactions (wallet_id_from, wallet_id_to, amount_in_btc, fee_pct, btc_usd_exchange_rate)
+                     VALUES (?, ?, ?, ?, ?);"""
+        args = (
+            wallet_id_from,
+            wallet_id_to,
+            transaction.btc_amount,
+            transaction.fee_pct,
+            transaction.exchange_rate,
+        )
+
+        cursor.execute(command, args)
+        connection.commit()
+
+        cursor.close()
+        connection.close()
+
+    @staticmethod
+    def __get_wallet_id(cursor: Cursor, wallet_address: str) -> str:
+        command = """SELECT id
+                     FROM wallets
+                     WHERE address = ?;"""
+        args = (wallet_address,)
+
+        cursor.execute(command, args)
+        row = cursor.fetchone()
+
+        return str(row[0])
+
+    def get_user_transactions(self, api_key: str) -> List[Transaction]:
+        connection = sqlite3.connect(self.db_name)
+        cursor = connection.cursor()
+
+        command = """SELECT w1.address,
+                            w2.address,
+                            t.amount_in_btc,
+                            t.fee_pct,
+                            t.btc_usd_exchange_rate
+                     FROM transactions t
+                     JOIN wallets w1
+                     ON t.wallet_id_from = w1.id
+                     JOIN wallets w2
+                     ON t.wallet_id_to = w2.id
+                     JOIN users_wallets uw1
+                     ON w1.id = uw1.wallet_id
+                     JOIN users_wallets uw2
+                     ON w2.id = uw2.wallet_id
+                     JOIN users u1
+                     ON uw1.user_id = u1.id
+                     JOIN users u2
+                     ON uw2.user_id = u2.id
+                     WHERE u1.api_key = ?
+                     OR u2.api_key = ?;"""
+        args = (api_key, api_key)
+
+        cursor.execute(command, args)
+        rows = cursor.fetchall()
+
+        cursor.close()
+        connection.close()
+
+        transactions = []
+
+        if rows:
+            for row in rows:
+                transactions.append(
+                    Transaction(
+                        wallet_address_from=row[0],
+                        wallet_address_to=row[1],
+                        btc_amount=row[2],
+                        fee_pct=row[3],
+                        exchange_rate=row[4],
+                    )
+                )
+
+        return transactions
+
+    def get_wallet_user(self, wallet_address: str) -> UserInfo:
+        connection = sqlite3.connect(self.db_name)
+        cursor = connection.cursor()
+
+        command = """SELECT u.email,
+                            u.api_key
+                     FROM wallets w
+                     JOIN users_wallets uw
+                     ON w.id = uw.wallet_id
+                     JOIN users u
+                     ON uw.user_id = u.id
+                     WHERE w.address = ?;"""
+        args = (wallet_address,)
+
+        cursor.execute(command, args)
+        row = cursor.fetchone()
+
+        cursor.close()
+        connection.close()
+
+        return UserInfo(email=row[0], api_key=row[1])
+
+    def add_wallet(self, wallet: Wallet) -> None:
+        connection = sqlite3.connect(self.db_name)
+        cursor = connection.cursor()
+
+        command = """INSERT INTO wallets (address, balance_in_btc)
+                     VALUES (?, ?);"""
+        args = (wallet.wallet_address, wallet.btc_balance)
+
+        cursor.execute(command, args)
+        connection.commit()
+
+        cursor.close()
+        connection.close()
+
+    def get_wallet(self, wallet_address: str) -> Wallet:
+        connection = sqlite3.connect(self.db_name)
+        cursor = connection.cursor()
+
+        command = """SELECT address,
+                            balance_in_btc
+                     FROM wallets
+                     WHERE address = ?;"""
+        args = (wallet_address,)
+
+        cursor.execute(command, args)
+        row = cursor.fetchone()
+
+        cursor.close()
+        connection.close()
+
+        return Wallet(wallet_address=row[0], btc_balance=row[1])
+
+    def get_wallet_transactions(self, wallet_address: str) -> List[Transaction]:
+        connection = sqlite3.connect(self.db_name)
+        cursor = connection.cursor()
+
+        command = """SELECT w1.address,
+                            w2.address,
+                            t.amount_in_btc,
+                            t.fee_pct,
+                            t.btc_usd_exchange_rate
+                     FROM transactions t
+                     JOIN wallets w1
+                     ON t.wallet_id_from = w1.id
+                     JOIN wallets w2
+                     ON t.wallet_id_to = w2.id
+                     WHERE w1.address = ?
+                     OR w2.address = ?;"""
+        args = (wallet_address, wallet_address)
+
+        cursor.execute(command, args)
+        rows = cursor.fetchall()
+
+        cursor.close()
+        connection.close()
+
+        transactions = []
+
+        if rows:
+            for row in rows:
+                transactions.append(
+                    Transaction(
+                        wallet_address_from=row[0],
+                        wallet_address_to=row[1],
+                        btc_amount=row[2],
+                        fee_pct=row[3],
+                        exchange_rate=row[4],
+                    )
+                )
+
+        return transactions
+
+    def update_wallet_balance(
+        self, wallet_address: str, new_btc_balance: float
+    ) -> None:
+        connection = sqlite3.connect(self.db_name)
+        cursor = connection.cursor()
+
+        command = """UPDATE wallets
+                     SET balance_in_btc = ?
+                     WHERE address = ?;"""
+        args = (new_btc_balance, wallet_address)
+
+        cursor.execute(command, args)
         connection.commit()
 
         cursor.close()

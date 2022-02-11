@@ -30,7 +30,7 @@ class UserInfo:
 
 
 class IFatherRepository(Protocol):
-    def register_user(self, user: UserInfo) -> str:
+    def register_user(self, user: UserInfo) -> None:
         pass
 
     def fetch_all_transactions(self) -> List[Transaction]:
