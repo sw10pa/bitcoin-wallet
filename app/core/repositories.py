@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List, Protocol
+from typing import List, Optional, Protocol
 
 
 @dataclass
@@ -36,7 +36,7 @@ class IFatherRepository(Protocol):
     def fetch_all_transactions(self) -> List[Transaction]:
         pass
 
-    # saves transaction in databse
+    # saves transaction in database
     def add_transaction(self, transaction: Transaction) -> None:
         pass
 
@@ -47,7 +47,7 @@ class IFatherRepository(Protocol):
     def get_wallet_user(self, wallet_address: str) -> UserInfo:
         pass
 
-    def add_wallet(self, wallet: Wallet, user_api_key: str) -> None:
+    def add_wallet(self, wallet: Wallet, user: UserInfo) -> None:
         pass
 
     def get_wallet(self, wallet_address: str) -> Wallet:
@@ -60,4 +60,10 @@ class IFatherRepository(Protocol):
     def update_wallet_balance(
         self, wallet_address: str, new_btc_balance: float
     ) -> None:
+        pass
+
+    def get_user(self, api_key: str) -> Optional[UserInfo]:
+        pass
+
+    def get_user_by_email(self, email: str) -> Optional[UserInfo]:
         pass
