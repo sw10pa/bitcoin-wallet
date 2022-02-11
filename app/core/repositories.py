@@ -47,7 +47,7 @@ class IFatherRepository(Protocol):
     def get_wallet_user(self, wallet_address: str) -> UserInfo:
         pass
 
-    def add_wallet(self, wallet: Wallet) -> None:
+    def add_wallet(self, wallet: Wallet, user_api_key: str) -> None:
         pass
 
     def get_wallet(self, wallet_address: str) -> Wallet:
