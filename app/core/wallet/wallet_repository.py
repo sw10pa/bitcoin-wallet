@@ -1,6 +1,6 @@
 from typing import List, Optional, Protocol
 
-from app.core.repositories import Transaction, UserInfo, Wallet
+from app.core.entities import Transaction, UserInfo, Wallet
 
 
 class IWalletRepository(Protocol):

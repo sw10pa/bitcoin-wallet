@@ -1,6 +1,6 @@
 import os
 
-from app.core.repositories import Transaction, UserInfo, Wallet
+from app.core.entities import Transaction, UserInfo, Wallet
 from app.infrastructure.sqlite.sqlite_repository import SQLiteRepository
 
 TEST_DB_NAME = "tst.db"

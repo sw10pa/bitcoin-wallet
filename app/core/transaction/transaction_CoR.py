@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Optional
 
-from app.core.repositories import Transaction, UserInfo, Wallet
+from app.core.entities import Transaction, UserInfo, Wallet
 from app.core.transaction.transaction_repository import ITransactionRepository
 from app.core.utils import Response, get_btc_to_usd_rate
 

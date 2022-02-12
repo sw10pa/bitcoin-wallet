@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import Optional, Protocol
 
 from app.core.admin.admin_repository import IAdminRepository
-from app.core.repositories import StatisticsInfo
+from app.core.entities import StatisticsInfo
 from app.core.utils import Response
 
 

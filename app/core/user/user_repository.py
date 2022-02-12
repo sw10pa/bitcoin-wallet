@@ -1,6 +1,6 @@
 from typing import Optional, Protocol
 
-from app.core.repositories import UserInfo
+from app.core.entities import UserInfo
 
 
 class IUserRepository(Protocol):

@@ -2,7 +2,7 @@ import uuid
 from dataclasses import dataclass
 from typing import Optional, Protocol
 
-from app.core.repositories import Wallet
+from app.core.entities import Wallet
 from app.core.transaction.transaction_interactor import TransactionsResponse
 from app.core.utils import Response, get_btc_to_usd_rate
 from app.core.wallet.wallet_repository import IWalletRepository
@@ -47,6 +47,7 @@ class IWalletInteractor(Protocol):
         pass
 
 
+# TODO Chain of Responsibility pattern
 class WalletInteractor:
     def __init__(self, wallet_repository: IWalletRepository):
         self.wallet_repository = wallet_repository

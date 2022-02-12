@@ -2,7 +2,7 @@ import uuid
 from dataclasses import dataclass
 from typing import Optional, Protocol
 
-from app.core.repositories import UserInfo
+from app.core.entities import UserInfo
 from app.core.user.user_repository import IUserRepository
 from app.core.utils import Response
 

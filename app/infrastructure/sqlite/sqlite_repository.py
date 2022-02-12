@@ -2,7 +2,7 @@ import sqlite3
 from sqlite3 import Cursor
 from typing import List, Optional
 
-from app.core.repositories import Transaction, UserInfo, Wallet
+from app.core.entities import Transaction, UserInfo, Wallet
 
 
 class SQLiteRepository:

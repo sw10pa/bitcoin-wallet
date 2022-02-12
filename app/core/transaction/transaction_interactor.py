@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import List, Optional, Protocol
 
-from app.core.repositories import Transaction
+from app.core.entities import Transaction
 from app.core.transaction.transaction_CoR import (
     BalanceCheckHandler,
     ExchangeRateHandler,

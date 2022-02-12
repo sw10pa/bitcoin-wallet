@@ -1,6 +1,6 @@
 from typing import List, Protocol
 
-from app.core.repositories import Transaction
+from app.core.entities import Transaction
 
 
 class IAdminRepository(Protocol):
