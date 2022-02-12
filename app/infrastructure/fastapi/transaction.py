@@ -1,10 +1,8 @@
 from fastapi import APIRouter, Depends
 
 from app.core.facade import BTCWalletService
-from app.core.transaction.transaction_interactor import (
-    MakeTransactionRequest,
-    TransactionsResponse,
-)
+from app.core.transaction.transaction_CoR import MakeTransactionRequest
+from app.core.transaction.transaction_interactor import TransactionsResponse
 from app.core.utils import Response
 from app.infrastructure.fastapi.dependables import get_core
 

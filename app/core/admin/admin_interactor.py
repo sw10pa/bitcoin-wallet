@@ -1,7 +1,8 @@
 from dataclasses import dataclass
-from typing import List, Optional, Protocol
+from typing import Optional, Protocol
 
-from app.core.repositories import StatisticsInfo, Transaction
+from app.core.admin.admin_repository import IAdminRepository
+from app.core.repositories import StatisticsInfo
 from app.core.utils import Response
 
 
@@ -13,11 +14,6 @@ class StatisticsRequest:
 @dataclass
 class StatisticsResponse(Response):
     statistics_info: Optional[StatisticsInfo]
-
-
-class IAdminRepository(Protocol):
-    def fetch_all_transactions(self) -> List[Transaction]:
-        pass
 
 
 class IAdminInteractor(Protocol):

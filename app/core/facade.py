@@ -1,33 +1,33 @@
 from app.core.admin.admin_interactor import (
     AdminInteractor,
     IAdminInteractor,
-    IAdminRepository,
     StatisticsRequest,
     StatisticsResponse,
 )
+from app.core.admin.admin_repository import IAdminRepository
+from app.core.transaction.transaction_CoR import MakeTransactionRequest
 from app.core.transaction.transaction_interactor import (
     ITransactionInteractor,
-    ITransactionRepository,
-    MakeTransactionRequest,
     TransactionInteractor,
     TransactionsResponse,
 )
+from app.core.transaction.transaction_repository import ITransactionRepository
 from app.core.user.user_interactor import (
     IUserInteractor,
-    IUserRepository,
     RegisterUserRequest,
     RegisterUserResponse,
     UserInteractor,
 )
+from app.core.user.user_repository import IUserRepository
 from app.core.utils import Response
 from app.core.wallet.wallet_interactor import (
     AddWalletRequest,
     FetchWalletTransactionsRequest,
     IWalletInteractor,
-    IWalletRepository,
     WalletInteractor,
     WalletResponse,
 )
+from app.core.wallet.wallet_repository import IWalletRepository
 
 
 class BTCWalletService:

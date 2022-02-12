@@ -1,10 +1,11 @@
 import uuid
 from dataclasses import dataclass
-from typing import List, Optional, Protocol
+from typing import Optional, Protocol
 
-from app.core.repositories import Transaction, UserInfo, Wallet
+from app.core.repositories import Wallet
 from app.core.transaction.transaction_interactor import TransactionsResponse
 from app.core.utils import Response, get_btc_to_usd_rate
+from app.core.wallet.wallet_repository import IWalletRepository
 
 MAX_WALLET_COUNT = 3
 DEFAULT_INITIAL_BALANCE = 1.0
@@ -31,23 +32,6 @@ class FetchWalletTransactionsRequest:
 @dataclass
 class WalletResponse(Response):
     wallet_info: Optional[WalletInfo]
-
-
-class IWalletRepository(Protocol):
-    def get_user(self, api_key: str) -> Optional[UserInfo]:
-        pass
-
-    def get_user_wallets(self, user: UserInfo) -> List[Wallet]:
-        pass
-
-    def get_wallet(self, wallet_address: str) -> Optional[Wallet]:
-        pass
-
-    def get_wallet_transactions(self, wallet_address: str) -> List[Transaction]:
-        pass
-
-    def add_wallet(self, wallet: Wallet, user: UserInfo) -> None:
-        pass
 
 
 class IWalletInteractor(Protocol):
