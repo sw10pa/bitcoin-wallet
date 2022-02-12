@@ -1,14 +1,17 @@
-import uuid
 from dataclasses import dataclass
 from typing import Optional, Protocol
 
-from app.core.entities import Wallet
 from app.core.transaction.transaction_interactor import TransactionsResponse
-from app.core.utils import Response, get_btc_to_usd_rate
+from app.core.utils import Response
+from app.core.wallet.wallet_CoR import (
+    AddWalletHandler,
+    ExchangeRateHandler,
+    UserCheckHandler,
+    WalletCheckHandler,
+    WalletCountCheckHandler,
+    WalletHandlerArgs,
+)
 from app.core.wallet.wallet_repository import IWalletRepository
-
-MAX_WALLET_COUNT = 3
-DEFAULT_INITIAL_BALANCE = 1.0
 
 
 @dataclass
@@ -21,6 +24,12 @@ class WalletInfo:
 @dataclass
 class AddWalletRequest:
     api_key: str
+
+
+@dataclass
+class GetWalletRequest:
+    api_key: str
+    wallet_address: str
 
 
 @dataclass
@@ -38,7 +47,7 @@ class IWalletInteractor(Protocol):
     def add_wallet(self, request: AddWalletRequest) -> WalletResponse:
         pass
 
-    def get_wallet_info(self, api_key: str, wallet_address: str) -> WalletResponse:
+    def get_wallet_info(self, request: GetWalletRequest) -> WalletResponse:
         pass
 
     def get_wallet_transactions(
@@ -47,57 +56,48 @@ class IWalletInteractor(Protocol):
         pass
 
 
-# TODO Chain of Responsibility pattern
 class WalletInteractor:
     def __init__(self, wallet_repository: IWalletRepository):
         self.wallet_repository = wallet_repository
 
     def add_wallet(self, request: AddWalletRequest) -> WalletResponse:
-        user = self.wallet_repository.get_user(request.api_key)
-        if user is None:
-            return WalletResponse(
-                success=False, message="Invalid API key", wallet_info=None
-            )
-        user_wallets = self.wallet_repository.get_user_wallets(user)
-        if len(user_wallets) >= MAX_WALLET_COUNT:
-            return WalletResponse(
-                success=False, message="Max wallet count reached", wallet_info=None
-            )
-
-        wallet_address = str(uuid.uuid4().hex)
-        self.wallet_repository.add_wallet(
-            Wallet(
-                wallet_address=wallet_address,
-                btc_balance=DEFAULT_INITIAL_BALANCE,
-            ),
-            user,
+        handler = UserCheckHandler()
+        handler.set_next(WalletCountCheckHandler()).set_next(AddWalletHandler())
+        args = WalletHandlerArgs(
+            api_key=request.api_key, repository=self.wallet_repository
         )
-        return self.get_wallet_info(request.api_key, wallet_address)
 
-    def get_wallet_info(self, api_key: str, wallet_address: str) -> WalletResponse:
-        user = self.wallet_repository.get_user(api_key)
-        wallet = self.wallet_repository.get_wallet(wallet_address)
-
-        if (
-            user is None
-            or wallet is None
-            or wallet not in self.wallet_repository.get_user_wallets(user)
-        ):
+        response = handler.handle(args)
+        if not response.success:
             return WalletResponse(
-                success=False, message="Invalid credentials", wallet_info=None
+                success=response.success, message=response.message, wallet_info=None
             )
+        assert args.wallet_address is not None
+        return self.get_wallet_info(
+            GetWalletRequest(request.api_key, args.wallet_address)
+        )
 
-        exchange_rate = get_btc_to_usd_rate()
-        if exchange_rate is None:
+    def get_wallet_info(self, request: GetWalletRequest) -> WalletResponse:
+        handler = UserCheckHandler()
+        handler.set_next(WalletCheckHandler()).set_next(ExchangeRateHandler())
+        args = WalletHandlerArgs(
+            api_key=request.api_key,
+            repository=self.wallet_repository,
+            wallet_address=request.wallet_address,
+        )
+        response = handler.handle(args)
+
+        if not response.success:
             return WalletResponse(
-                success=False,
-                message="Could not determine exchange rate",
-                wallet_info=None,
+                success=response.success, message=response.message, wallet_info=None
             )
-        usd_balance = wallet.btc_balance * exchange_rate
+        assert args.wallet is not None
+        assert args.exchange_rate is not None
+
+        usd_balance = args.wallet.btc_balance * args.exchange_rate
         wallet_info = WalletInfo(
-            wallet_address=wallet_address,
-            btc_balance=wallet.btc_balance,
+            wallet_address=request.wallet_address,
+            btc_balance=args.wallet.btc_balance,
             usd_balance=usd_balance,
         )
         return WalletResponse(
@@ -109,16 +109,18 @@ class WalletInteractor:
     def get_wallet_transactions(
         self, request: FetchWalletTransactionsRequest
     ) -> TransactionsResponse:
-        user = self.wallet_repository.get_user(request.api_key)
-        wallet = self.wallet_repository.get_wallet(request.wallet_address)
+        handler = UserCheckHandler()
+        handler.set_next(WalletCheckHandler())
+        args = WalletHandlerArgs(
+            api_key=request.api_key,
+            repository=self.wallet_repository,
+            wallet_address=request.wallet_address,
+        )
 
-        if (
-            user is None
-            or wallet is None
-            or wallet not in self.wallet_repository.get_user_wallets(user)
-        ):
+        response = handler.handle(args)
+        if not response.success:
             return TransactionsResponse(
-                success=False, message="Invalid credentials", transactions=None
+                success=response.success, message=response.message, transactions=None
             )
 
         return TransactionsResponse(

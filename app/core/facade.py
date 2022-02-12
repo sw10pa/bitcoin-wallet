@@ -23,6 +23,7 @@ from app.core.utils import Response
 from app.core.wallet.wallet_interactor import (
     AddWalletRequest,
     FetchWalletTransactionsRequest,
+    GetWalletRequest,
     IWalletInteractor,
     WalletInteractor,
     WalletResponse,
@@ -69,8 +70,8 @@ class BTCWalletService:
     def add_wallet(self, request: AddWalletRequest) -> WalletResponse:
         return self._wallet_interactor.add_wallet(request)
 
-    def get_wallet(self, api_key: str, address: str) -> WalletResponse:
-        return self._wallet_interactor.get_wallet_info(api_key, address)
+    def get_wallet(self, request: GetWalletRequest) -> WalletResponse:
+        return self._wallet_interactor.get_wallet_info(request)
 
     def get_wallet_transactions(
         self, request: FetchWalletTransactionsRequest

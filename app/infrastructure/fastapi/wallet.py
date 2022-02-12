@@ -5,6 +5,7 @@ from app.core.transaction.transaction_interactor import TransactionsResponse
 from app.core.wallet.wallet_interactor import (
     AddWalletRequest,
     FetchWalletTransactionsRequest,
+    GetWalletRequest,
     WalletResponse,
 )
 from app.infrastructure.fastapi.dependables import get_core
@@ -24,7 +25,8 @@ def add_wallet(
 def get_wallet(
     api_key: str, address: str, core: BTCWalletService = Depends(get_core)
 ) -> WalletResponse:
-    return core.get_wallet(api_key, address)
+    request = GetWalletRequest(api_key=api_key, wallet_address=address)
+    return core.get_wallet(request)
 
 
 @wallet_api.get("/wallets/{address}/transactions")
