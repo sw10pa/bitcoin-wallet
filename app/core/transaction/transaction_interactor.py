@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import List, Optional, Protocol
 
-from app.core.entities import Transaction
+from app.core.entities import Response, Transaction
 from app.core.transaction.transaction_CoR import (
     BalanceCheckHandler,
     ExchangeRateHandler,
@@ -12,7 +12,6 @@ from app.core.transaction.transaction_CoR import (
     WalletCheckHandler,
 )
 from app.core.transaction.transaction_repository import ITransactionRepository
-from app.core.utils import Response
 
 
 @dataclass
@@ -39,12 +38,16 @@ class TransactionInteractor:
         user = self.transaction_repository.get_user(api_key)
         if user is None:
             return TransactionsResponse(
-                success=False, message="Invalid credentials", transactions=None
+                success=False,
+                message="Invalid credentials",
+                status_code=401,
+                transactions=None,
             )
 
         return TransactionsResponse(
             success=True,
             message="Here are your transactions",
+            status_code=200,
             transactions=self.transaction_repository.get_user_transactions(user),
         )
 

@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 from typing import Optional, Protocol
 
+from app.core.entities import Response
 from app.core.transaction.transaction_interactor import TransactionsResponse
-from app.core.utils import Response
 from app.core.wallet.wallet_CoR import (
     AddWalletHandler,
     ExchangeRateHandler,
@@ -70,7 +70,10 @@ class WalletInteractor:
         response = handler.handle(args)
         if not response.success:
             return WalletResponse(
-                success=response.success, message=response.message, wallet_info=None
+                success=response.success,
+                message=response.message,
+                status_code=response.status_code,
+                wallet_info=None,
             )
         assert args.wallet_address is not None
         return self.get_wallet_info(
@@ -89,7 +92,10 @@ class WalletInteractor:
 
         if not response.success:
             return WalletResponse(
-                success=response.success, message=response.message, wallet_info=None
+                success=response.success,
+                message=response.message,
+                status_code=response.status_code,
+                wallet_info=None,
             )
         assert args.wallet is not None
         assert args.exchange_rate is not None
@@ -103,6 +109,7 @@ class WalletInteractor:
         return WalletResponse(
             success=True,
             message="Here is your wallet information",
+            status_code=200,
             wallet_info=wallet_info,
         )
 
@@ -120,12 +127,16 @@ class WalletInteractor:
         response = handler.handle(args)
         if not response.success:
             return TransactionsResponse(
-                success=response.success, message=response.message, transactions=None
+                success=response.success,
+                message=response.message,
+                status_code=response.status_code,
+                transactions=None,
             )
 
         return TransactionsResponse(
             success=True,
             message="Here are your wallet transactions",
+            status_code=200,
             transactions=self.wallet_repository.get_wallet_transactions(
                 request.wallet_address
             ),

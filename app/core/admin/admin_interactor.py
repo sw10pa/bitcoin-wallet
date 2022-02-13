@@ -2,8 +2,7 @@ from dataclasses import dataclass
 from typing import Optional, Protocol
 
 from app.core.admin.admin_repository import IAdminRepository
-from app.core.entities import StatisticsInfo
-from app.core.utils import Response
+from app.core.entities import Response, StatisticsInfo
 
 
 @dataclass
@@ -32,6 +31,7 @@ class AdminInteractor:
             return StatisticsResponse(
                 success=False,
                 message="Invalid API key",
+                status_code=401,
                 statistics_info=None,
             )
 
@@ -41,5 +41,6 @@ class AdminInteractor:
         return StatisticsResponse(
             success=True,
             message="OK",
+            status_code=200,
             statistics_info=StatisticsInfo(transaction_count, profit),
         )

@@ -2,9 +2,9 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Optional
 
-from app.core.entities import Transaction, UserInfo, Wallet
+from app.core.entities import Response, Transaction, UserInfo, Wallet
 from app.core.transaction.transaction_repository import ITransactionRepository
-from app.core.utils import Response, get_btc_to_usd_rate
+from app.core.utils import get_btc_to_usd_rate
 
 FEE_PERCENTAGE = 0.015
 
@@ -51,7 +51,7 @@ class TransactionHandler(ITransactionHandler):
         if self._next_handler:
             return self._next_handler.handle(args)
 
-        return Response(success=True, message="Transaction successful")
+        return Response(success=True, message="Transaction successful", status_code=200)
 
 
 class WalletCheckHandler(TransactionHandler):
@@ -63,6 +63,7 @@ class WalletCheckHandler(TransactionHandler):
             return Response(
                 success=False,
                 message="Invalid credentials",
+                status_code=401,
             )
         args.wallet_from = wallet_from
         args.wallet_to = wallet_to
@@ -80,6 +81,7 @@ class UserCheckHandler(TransactionHandler):
             return Response(
                 success=False,
                 message="Invalid credentials",
+                status_code=401,
             )
         args.user_from = user_from
         args.user_to = user_to
@@ -93,6 +95,7 @@ class BalanceCheckHandler(TransactionHandler):
             return Response(
                 success=False,
                 message="Insufficient funds",
+                status_code=402,
             )
         return super().handle(args)
 
@@ -101,7 +104,11 @@ class ExchangeRateHandler(TransactionHandler):
     def handle(self, args: MakeTransactionArgs) -> Response:
         exchange_rate = get_btc_to_usd_rate()
         if exchange_rate is None:
-            return Response(success=False, message="Could not determine exchange rate")
+            return Response(
+                success=False,
+                message="Could not determine exchange rate",
+                status_code=500,
+            )
         args.exchange_rate = exchange_rate
         return super().handle(args)
 

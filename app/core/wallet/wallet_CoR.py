@@ -3,8 +3,8 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Optional
 
-from app.core.entities import UserInfo, Wallet
-from app.core.utils import Response, get_btc_to_usd_rate
+from app.core.entities import Response, UserInfo, Wallet
+from app.core.utils import get_btc_to_usd_rate
 from app.core.wallet.wallet_repository import IWalletRepository
 
 MAX_WALLET_COUNT = 3
@@ -43,14 +43,16 @@ class WalletHandler(IWalletHandler):
         if self._next_handler:
             return self._next_handler.handle(args)
 
-        return Response(success=True, message="OK")
+        return Response(success=True, message="OK", status_code=200)
 
 
 class UserCheckHandler(WalletHandler):
     def handle(self, args: WalletHandlerArgs) -> Response:
         user = args.repository.get_user(args.api_key)
         if user is None:
-            return Response(success=False, message="Invalid Credentials")
+            return Response(
+                success=False, message="Invalid Credentials", status_code=401
+            )
         args.user = user
         return super().handle(args)
 
@@ -63,6 +65,7 @@ class WalletCountCheckHandler(WalletHandler):
             return Response(
                 success=False,
                 message="Max wallet count reached",
+                status_code=403,
             )
         return super().handle(args)
 
@@ -88,7 +91,9 @@ class WalletCheckHandler(WalletHandler):
         assert args.wallet_address is not None
         wallet = args.repository.get_wallet(args.wallet_address)
         if wallet is None or wallet not in args.repository.get_user_wallets(args.user):
-            return Response(success=False, message="Invalid credentials")
+            return Response(
+                success=False, message="Invalid credentials", status_code=401
+            )
         args.wallet = wallet
         return super().handle(args)
 
@@ -97,6 +102,10 @@ class ExchangeRateHandler(WalletHandler):
     def handle(self, args: WalletHandlerArgs) -> Response:
         exchange_rate = get_btc_to_usd_rate()
         if exchange_rate is None:
-            return Response(success=False, message="Could not determine exchange rate")
+            return Response(
+                success=False,
+                message="Could not determine exchange rate",
+                status_code=500,
+            )
         args.exchange_rate = exchange_rate
         return super().handle(args)

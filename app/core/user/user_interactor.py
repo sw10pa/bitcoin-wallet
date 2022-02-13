@@ -2,9 +2,8 @@ import uuid
 from dataclasses import dataclass
 from typing import Optional, Protocol
 
-from app.core.entities import UserInfo
+from app.core.entities import Response, UserInfo
 from app.core.user.user_repository import IUserRepository
-from app.core.utils import Response
 
 
 @dataclass
@@ -31,6 +30,7 @@ class UserInteractor:
             return RegisterUserResponse(
                 success=False,
                 message="User with this email already exists",
+                status_code=409,
                 api_key=None,
             )
 
@@ -38,5 +38,8 @@ class UserInteractor:
         user = UserInfo(email=request.email, api_key=api_key)
         self.user_repository.register_user(user)
         return RegisterUserResponse(
-            api_key=api_key, success=True, message="Here is your api key, keep it safe!"
+            api_key=api_key,
+            success=True,
+            status_code=201,
+            message="Here is your api key, keep it safe!",
         )

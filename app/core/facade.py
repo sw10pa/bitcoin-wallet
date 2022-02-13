@@ -5,6 +5,7 @@ from app.core.admin.admin_interactor import (
     StatisticsResponse,
 )
 from app.core.admin.admin_repository import IAdminRepository
+from app.core.entities import Response
 from app.core.transaction.transaction_CoR import MakeTransactionRequest
 from app.core.transaction.transaction_interactor import (
     ITransactionInteractor,
@@ -19,7 +20,6 @@ from app.core.user.user_interactor import (
     UserInteractor,
 )
 from app.core.user.user_repository import IUserRepository
-from app.core.utils import Response
 from app.core.wallet.wallet_interactor import (
     AddWalletRequest,
     FetchWalletTransactionsRequest,

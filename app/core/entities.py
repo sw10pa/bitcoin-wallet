@@ -2,6 +2,13 @@ from dataclasses import dataclass
 
 
 @dataclass
+class Response:
+    success: bool
+    message: str
+    status_code: int
+
+
+@dataclass
 class Transaction:
     wallet_address_from: str
     wallet_address_to: str
